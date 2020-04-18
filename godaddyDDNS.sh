@@ -14,8 +14,8 @@
 
 
 # Add below two lines in crontab entry.
-## */5 * * * * ~/godaddy/godaddyDDNS.sh >/dev/null 2>&1  ##
-## @reboot ~/godaddy/godaddyDDNS.sh >/dev/null 2>&1  ##
+## */5 * * * * <Path-to-godaddyDDNS>/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1  ##
+## @reboot <Path-to-godaddyDDNS>/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1  ##
 
 
 DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)  				#Present directory of this file
