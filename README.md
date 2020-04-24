@@ -37,6 +37,7 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 * Check the log in godaddyDDNS.log file
 * If log status is OK. Its workinf fine. Verify the DNS record in godaddy account.
 * Create a crontab entry to run the godaddyDDNS.sh file every five minutes.
+* Youtube video to be released soon. Link will be updated here.
 
 **NOTES:**
 goDaddy supports 60 requests per minutes. This scripts uses 2 requests. So, Make sure to create cronjob accordingly so that request doesn't exceed 60 request per minute or else it will fail.
