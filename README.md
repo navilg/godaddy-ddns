@@ -19,9 +19,13 @@
 *Comment (#) is not supported in property file as of now. Avoid using # to ignore the lines.*
 
 domain=domain.com
+
 name=subdomainORwww
+
 key=key-value-from-godaddy-developer-console
+
 secret=secret-key-value-from-godaddy-developer-console
+
 
 e.g. To update DNS Name *navi.example.com*
 
@@ -39,6 +43,17 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 * Check the log in godaddyDDNS.log file
 * If log status is OK. Its workinf fine. Verify the DNS record in godaddy account.
 * Create a crontab entry to run the godaddyDDNS.sh file every five minutes.
+
+*crontab -e*
+
+Add below lines
+
+*\*/5 * * * * /Path/to/godaddyDDNS/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+
+*@reboot /Path/to/godaddyDDNS/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+
+Save it
+
 * Youtube video to be released soon. Link will be updated here.
 
 **NOTES:**
