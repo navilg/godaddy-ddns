@@ -16,6 +16,8 @@
 * Open godaddyDDNS/godaddyDDNS.properties file
 * Update the properties values as below:
 
+*Comment (#) is not supported in property file as of now. Avoid using # to ignore the lines.*
+
 domain=domain.com
 name=subdomainORwww
 key=key-value-from-godaddy-developer-console
