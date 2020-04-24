@@ -46,17 +46,27 @@ currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 	request='{"data":"'$currentIp'","ttl":3600}'
 #	echo $request
 	nresult=$(curl -i -s -X PUT \
- -H "$headers" \
- -H "Content-Type: application/json" \
- -d [$request] "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
-	if [ ! -z "$nresult" ]
+ 	-H "$headers" \
+ 	-H "Content-Type: application/json" \
+ 	-d [$request] "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
+#	echo $result	
+	result=$(echo "$nresult" | grep -i http | awk '{first=$1;$1="";print $0;first;}')
+	res=$(echo $result|awk '{print $NF}'|sed 's/\r$//')                             ## REMOVES \r character which is automatically getting suffixed in output of API ##
+	if [[ "$res" == "OK" ]]
 	then
-		echo "KO" > godaddyDDNS.log
+       # 	echo "Its OK"
+   		echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+		echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+	        echo "Status: OK" >> $DIR/godaddyDDNS.log
 	else
-		echo "OK" > godaddyDDNS.log
+        #	echo "Its not OK"
+		echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+		echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+	        echo "Status: NOT OK - $result" >> $DIR/godaddyDDNS.log
 	fi
  else
-	#echo "Ips are equal"
-	echo "OK" > godaddyDDNS.log
+        #echo "Ips are equal"
+	echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+	echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+        echo "Status: OK" >> $DIR/godaddyDDNS.log
 fi
-
