@@ -41,16 +41,17 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 * After updating. Run the script.
 *./godaddyDDNS.sh*
 * Check the log in godaddyDDNS.log file
-* If log status is OK. Its workinf fine. Verify the DNS record in godaddy account.
+* If log status is OK. Its working fine. Verify the DNS record in godaddy account.
+* **Updating the DNS record in godaddy doesn't mean DNS server is also updated. DNS server updation completely depends on TTL value. Its good to have short TTL value for highly dynamic IP address.**
 * Create a crontab entry to run the godaddyDDNS.sh file every five minutes.
 
 *crontab -e*
 
 Add below lines
 
-*\*/5 * * * * /Path/to/godaddyDDNS/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+*\*/5 * * * * /Path/to/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
 
-*@reboot /Path/to/godaddyDDNS/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+*@reboot /Path/to/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
 
 Save it
 
