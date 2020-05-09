@@ -22,6 +22,7 @@ DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)  				#Presen
 properties_file="$DIR/godaddyDDNS.properties"							#Properties file to store value of domain, subdomain, keys and others
 domain="$(grep -i domain "$properties_file"|tail -1|awk -F "=" '{print $2}')"  			#domain name
 name="$(grep -i name "$properties_file"|tail -1|awk -F "=" '{print $2}')"			#sub-domain
+ttl="$(grep -i ttl "$properties_file"|tail -1|awk -F "=" '{print $2}')"
 key="$(grep -i key "$properties_file"|tail -1|awk -F "=" '{print $2}')"				#godaddy developer key
 secret="$(grep -i secret "$properties_file"|tail -1|awk -F "=" '{print $2}')"			#godaddy developer secret
 
@@ -43,7 +44,7 @@ currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
  if [ "$dnsIp" != $currentIp ];
  then
 #	echo "Ips are not equal"
-	request='{"data":"'$currentIp'","ttl":3600}'
+	request='{"data":"'$currentIp'","ttl":'$ttl'}'
 #	echo $request
 	nresult=$(curl -i -s -X PUT \
  	-H "$headers" \

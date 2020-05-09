@@ -22,6 +22,8 @@ domain=domain.com
 
 name=subdomainORwww
 
+ttl=ttlValueInSeconds
+
 key=key-value-from-godaddy-developer-console
 
 secret=secret-key-value-from-godaddy-developer-console
@@ -34,6 +36,8 @@ domain=example.com
 name=navi
 
 key=cvvgfvfd54jghgz8s
+
+ttl=3600
 
 secret=dfgsx6daflx5]gkhhi8yjxf
 
