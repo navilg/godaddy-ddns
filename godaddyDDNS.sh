@@ -33,7 +33,10 @@ headers="Authorization: sso-key $key:$secret"
 result=$(curl -s -X GET -H "$headers" \
  "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
 
+#echo $result
+
 dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+existingTtl=$(echo $result | cut -d "," -f 3 | cut -d ":" -f 2)
 # echo "dnsIp:" $dnsIp
 
 # Get public ip address there are several websites that can do this.
@@ -41,7 +44,7 @@ ret=$(curl -s GET "http://ipinfo.io/json")
 currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 # echo "currentIp:" $currentIp
 
- if [ "$dnsIp" != $currentIp ];
+ if [ "$dnsIp" != $currentIp -o $existingTtl -ne $ttl ];
  then
 #	echo "Ips are not equal"
 	request='{"data":"'$currentIp'","ttl":'$ttl'}'
