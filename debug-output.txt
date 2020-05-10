@@ -1,8 +1,0 @@
-result=[{"data":"103.5.135.67","name":"test","ttl":3600,"type":"A"}]'
-
-To filter out comments line
-sudo grep -v "#" /etc/sudoers
-
-dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
-
-existingTtl=$(echo $result | grep -oE "ttl\:[0-9]{3,}"
