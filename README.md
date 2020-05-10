@@ -6,7 +6,6 @@
 * Public IP address of many hosting servers are dynamic and it changes based on availability. Some examples include AWS EC2 instance, Home Servers, GCP Cloud, etc.
 * This require updating the IP address in goDaddy DNS record so that requests are forwarded to correct IP address.
 * This script uses cron jobs to check the current Public IP address of server and update the IP address in goDaddy Manage DNS. 
-* Version: vZ.0 (Zero point O)
 * OS: Linux. Tested on Ubuntu server 18.04 LTS with BASH shell.
 * Prerequisite tools: curl, BASH shell.
 
