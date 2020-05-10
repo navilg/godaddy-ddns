@@ -60,17 +60,17 @@ currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 	then
        # 	echo "Its OK"
    		echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-		echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+		echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
 	        echo "Status: OK" >> $DIR/godaddyDDNS.log
 	else
         #	echo "Its not OK"
 		echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-		echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+		echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
 	        echo "Status: NOT OK - $result" >> $DIR/godaddyDDNS.log
 	fi
  else
         #echo "Ips are equal"
 	echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-	echo "DNS IP: $dnsIp" >> $DIR/godaddyDDNS.log
+	echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
         echo "Status: OK" >> $DIR/godaddyDDNS.log
 fi
