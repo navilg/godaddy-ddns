@@ -66,7 +66,8 @@ goDaddy supports 60 requests per minutes. This scripts uses 2 requests. So, Make
 
 **Contribution guidelines**
 
-* You can create issue here --> https://github.com/navilg/godaddyDDNS/issues 
+* You can create issue here --> https://github.com/navilg/godaddyDDNS/issues
+* Your pull requests are invited for review and merge --> https://github.com/navilg/godaddyDDNS/pulls
 
 **How to reach me ?**
 
