@@ -1,0 +1,3 @@
+1. Exclude commented lines
+2. Use source command to read properties file
+3.
