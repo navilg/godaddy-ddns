@@ -34,6 +34,8 @@ result=$(curl -s -X GET -H "$headers" \
 
 dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
 existingTtl=$(echo $result | cut -d "," -f 3 | cut -d ":" -f 2)
+# If record is not created ttl value to initialise with a number
+[[ "$existingTtl" == "[]" ]] && existingTtl=0
 
 # Get public ip address there are several websites that can do this.
 ret=$(curl -s GET "http://ipinfo.io/json")
@@ -48,8 +50,8 @@ currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
  	-H "Content-Type: application/json" \
  	-d [$request] "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
     # Fetch out status from output and REMOVES \r character which is automatically getting suffixed in output of API
-	result=$(echo "$nresult" | grep -i http | awk '{first=$1;$1="";print $0;first;}' | awk '{print $NF}'|sed 's/\r$//')
-	#res=$(echo $result|awk '{print $NF}'|sed 's/\r$//')
+	result=$(echo "$nresult" | grep -i http | awk '{first=$1;$1="";print $0;first;}')
+	res=$(echo $result|awk '{print $NF}'|sed 's/\r$//')
 	if [[ "$res" == "OK" ]]
 	then
         # If status of returned output is OK
