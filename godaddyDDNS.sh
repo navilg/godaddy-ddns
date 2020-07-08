@@ -67,18 +67,34 @@ function setDNSRecord()
            echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
            echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
            echo "Status: OK" >> $DIR/godaddyDDNS.log
+           return 0
        else
            # If any error
            echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
            echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
            echo "Status: NOT OK - $result" >> $DIR/godaddyDDNS.log
+           return 1
        fi
     else
         # Ips and ttl are equal
        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
        echo "Status: OK" >> $DIR/godaddyDDNS.log
+       return 0
    fi
+}
+
+function addCronJobs()
+{
+    crontab -l > $DIR/godaddyDDNS.cron
+    grep -v "^#" $DIR/godaddyDDNS.cron | grep -i "$DIR/godaddyDDNS.sh"
+    croncheck=$?
+    if [[ $croncheck -ne 0 ]]; then
+        echo "*/5 * * * * $DIR/godaddyDDNS.sh >/dev/null 2>&1" >> $DIR/godaddyDDNS.cron
+        echo "@reboot $DIR/godaddyDDNS.sh >/dev/null 2>&1" >> $DIR/godaddyDDNS.cron
+        crontab "$DIR/godaddyDDNS.cron"
+    fi
+    rm -f $DIR/godaddyDDNS.cron
 }
 
 # Main - Function call
@@ -86,3 +102,7 @@ initialize
 getDNSRecord
 getPubIP
 setDNSRecord
+checkstatus=$?
+if [[ $checkstatus -eq 0 ]]; then
+    addCronJobs
+fi
