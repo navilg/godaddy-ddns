@@ -99,12 +99,12 @@ function writeLog()
         return 0
     elif [[ $1 -eq 100 ]]; then
         echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "DNS IP: " >> $DIR/godaddyDDNS.log
         echo "Status: Unknown - "$2"" >> $DIR/godaddyDDNS.log
         return 100
     else
         echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "DNS IP: " >> $DIR/godaddyDDNS.log
         echo "Status: NOT OK - "$2"" >> $DIR/godaddyDDNS.log
         return 1
     fi
