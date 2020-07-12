@@ -41,7 +41,7 @@ function getDNSRecord()
     echo $result | grep -w "code" | grep -w "message"
     # checkerror is zero if any error message with error code is returned.
     checkerror=$?
-    if [ $checkerror -ne 0 -o $checkconnection -eq 0 ]; then
+    if [ $checkerror -ne 0 -a $checkconnection -eq 0 ]; then
         dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
         existingTtl=$(echo $result | cut -d "," -f 3 | cut -d ":" -f 2)
         # If record is not created ttl value to initialise with a number
@@ -74,29 +74,40 @@ function setDNSRecord()
        -H "Content-Type: application/json" \
        -d [$request] "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
        # Fetch out status from output and REMOVES \r character which is automatically getting suffixed in output of API
-       result=$(echo "$nresult" | grep -i http | awk '{first=$1;$1="";print $0;first;}')
-       res=$(echo $result|awk '{print $NF}'|sed 's/\r$//')
-       if [[ "$res" == "OK" ]]
+       stat=$(echo "$nresult" | grep -i http | awk '{first=$1;$1="";print $0;first;}')
+       st=$(echo $stat|awk '{print $NF}'|sed 's/\r$//')
+       if [[ "$st" == "OK" ]]
        then
            # If status of returned output is OK
-           echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-           echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
-           echo "Status: OK" >> $DIR/godaddyDDNS.log
            return 0
        else
            # If any error
-           echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-           echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
-           echo "Status: NOT OK - $result" >> $DIR/godaddyDDNS.log
            return 1
        fi
     else
         # Ips and ttl are equal
-       echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-       echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
-       echo "Status: OK" >> $DIR/godaddyDDNS.log
        return 0
    fi
+}
+
+function writeLog()
+{
+    if [[ $1 -eq 0 ]]; then
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "Status: OK" >> $DIR/godaddyDDNS.log
+        return 0
+    elif [[ $1 -eq 100 ]]; then
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "Status: Unknown - "$2"" >> $DIR/godaddyDDNS.log
+        return 100
+    else
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
+        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "Status: NOT OK - "$2"" >> $DIR/godaddyDDNS.log
+        return 1
+    fi
 }
 
 function addCronJobs()
@@ -122,18 +133,47 @@ function addCronJobs()
     return 0
 }
 
+# Initialising Variables
+getDNSRecordStatus=1000
+getPubIPStatus=1000
+setDNSRecordStatus=1000
+addCronJobsStatus=1000
+
 # Main - Function call
 initialize
+
+# Get DNS Record
 getDNSRecord
-getDNSrecordStatus=$?
-if [[ $getDNSrecordStatus -eq 0 ]]; then
+getDNSRecordStatus=$?
+
+# Get Public IPv4 address of server/instance
+if [[ $getDNSRecordStatus -eq 0 ]]; then
     getPubIP
     getPubIPStatus=$?
 fi
-if [ $getDNSrecordStatus -eq 0 -a $getPubIPStatus -eq 0 ]; then
+
+# Set DNS record
+if [ $getDNSRecordStatus -eq 0 -a $getPubIPStatus -eq 0 ]; then
     setDNSRecord
     setDNSRecordStatus=$?
 fi
+
+# Write Log
+if [[ $checkconnection -ne 0 ]]; then
+    writeLog 100 "Connectivity Failed"
+elif [[ $checkerror -eq 0 ]]; then
+    writeLog 100 "$result"
+elif [[ $getPubIPStatus -ne 0 ]]; then
+    writeLog 100 "Connection Failed"
+elif [[ $setDNSRecordStatus -eq 1 ]]; then
+    writeLog 1 "$st"
+elif [[ $setDNSRecordStatus -eq 0 ]]; then
+    writeLog 0
+else
+    writeLog 100 "Unknown Error: Run command: bash -x godaddyDDNS.sh and report us with output after OMMITING key and secret."
+fi
+
+# Add cron job
 if [[ $setDNSRecordStatus -eq 0 ]]; then
     addCronJobs
     addCronJobsStatus=$?
