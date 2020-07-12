@@ -28,6 +28,7 @@ function initialize()
 
     # API header Authorisation
     headers="Authorization: sso-key $key:$secret"
+    return 0
 }
 
 function getDNSRecord()
@@ -35,17 +36,31 @@ function getDNSRecord()
     # Get the current data from GoDaddy DNS record
     result=$(curl -s -X GET -H "$headers" \
     "https://api.godaddy.com/v1/domains/$domain/records/A/$name")
-    dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
-    existingTtl=$(echo $result | cut -d "," -f 3 | cut -d ":" -f 2)
-    # If record is not created ttl value to initialise with a number
-    [[ "$existingTtl" == "[]" ]] && existingTtl=0
+    # checkconnection is non-zero if connection fails
+    checkconnection=$?
+    echo $result | grep -w "code" | grep -w "message"
+    # checkerror is zero if any error message with error code is returned.
+    checkerror=$?
+    if [ $checkerror -ne 0 -o $checkconnection -eq 0 ]; then
+        dnsIp=$(echo $result | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+        existingTtl=$(echo $result | cut -d "," -f 3 | cut -d ":" -f 2)
+        # If record is not created ttl value to initialise with a number
+        [[ "$existingTtl" == "[]" ]] && existingTtl=0
+        return 0
+    fi
+    return 1
 }
 
 function getPubIP()
 {
     # Get public ip address there are several websites that can do this.
     ret=$(curl -s GET "http://ipinfo.io/json")
-    currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+    checkret=$?
+    if [[ $checkret -eq 0 ]]; then
+        currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+        return 0
+    fi
+    return 1
 }
 
 function setDNSRecord()
@@ -94,15 +109,32 @@ function addCronJobs()
         echo "@reboot $DIR/godaddyDDNS.sh >/dev/null 2>&1" >> $DIR/godaddyDDNS.cron
         crontab "$DIR/godaddyDDNS.cron"
     fi
+    # Check new status of cron
+    crontab -l > $DIR/godaddyDDNS.cron
+    grep -v "^#" $DIR/godaddyDDNS.cron | grep -i "$DIR/godaddyDDNS.sh"
+    croncheck=$?
+    if [[ $croncheck -ne 0 ]]; then
+        # If cron task not created succesfully
+        rm -f $DIR/godaddyDDNS.cron
+        return 1
+    fi
     rm -f $DIR/godaddyDDNS.cron
+    return 0
 }
 
 # Main - Function call
 initialize
 getDNSRecord
-getPubIP
-setDNSRecord
-checkstatus=$?
-if [[ $checkstatus -eq 0 ]]; then
+getDNSrecordStatus=$?
+if [[ $getDNSrecordStatus -eq 0 ]]; then
+    getPubIP
+    getPubIPStatus=$?
+fi
+if [ $getDNSrecordStatus -eq 0 -a $getPubIPStatus -eq 0 ]; then
+    setDNSRecord
+    setDNSRecordStatus=$?
+fi
+if [[ $setDNSRecordStatus -eq 0 ]]; then
     addCronJobs
+    addCronJobsStatus=$?
 fi
