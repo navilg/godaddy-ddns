@@ -5,7 +5,7 @@
 
 * Public IP address of many hosting servers are dynamic and it changes based on availability. Some examples include AWS EC2 instance, Home Servers, GCP Cloud, etc.
 * This require updating the IP address in goDaddy DNS record so that requests are forwarded to correct IP address.
-* This script uses cron jobs to check the current Public IP address of server and update the IP address in goDaddy Manage DNS. 
+* This script uses cron jobs to check the current Public IP address of server and update the IP address in goDaddy Manage DNS.
 * OS: Linux. Tested on Ubuntu server 18.04 LTS with BASH shell.
 * Prerequisite tools: curl, BASH shell.
 
@@ -42,7 +42,7 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 
 * Key and Secret can be generated from godaddy Developer page. https://developer.godaddy.com/getstarted
 * After updating. Run the script.
-*./godaddyDDNS.sh*
+*./godaddy-ddns.sh*
 * Check the log in godaddyDDNS.log file
 * If log status is OK. Its working fine. Verify the DNS record in godaddy account.
 * **Updating the DNS record in godaddy doesn't mean DNS server is also updated. DNS server updation completely depends on TTL value. Its good to have short TTL value for highly dynamic IP address.**
@@ -52,9 +52,9 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 
 Add below lines
 
-*\*/5 * * * * /Path/to/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+*\*/5 * * * * /Path/to/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1*
 
-*@reboot /Path/to/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1*
+*@reboot /Path/to/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1*
 
 Save it
 
@@ -75,4 +75,3 @@ goDaddy supports 60 requests per minutes. This scripts uses 2 requests. So, Make
 * You can reach out to me on navilg0409@gmail.com for any feedback.
 
 **Special mention to https://github.com/markafox/GoDaddy_Powershell_DDNS which is base for this script.**
-

@@ -630,9 +630,9 @@ attach them to the start of each source file to most effectively state
 the exclusion of warranty; and each file should have at least the
 "copyright" line and a pointer to where the full notice is found.
 
-        godaddyDDNS is a simple bash script which can be run manually or 
-	using cronjobs to automatically update the public IPV4 address of
-	host server in godaddy DNS record.
+        godaddy-ddns is a simple bash script which can be run manually or
+	    using cronjobs to automatically update the public IPV4 address of
+	    host server in godaddy DNS record.
         Copyright (C) 2020  Navratan Gupta
 
         This program is free software: you can redistribute it and/or modify
@@ -654,7 +654,7 @@ mail.
 If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:
 
-        godaddyDDNS  Copyright (C) 2020 Navratan Gupta
+        godaddy-ddns  Copyright (C) 2020 Navratan Gupta
         This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
         This is free software, and you are welcome to redistribute it
         under certain conditions; type `show c' for details.

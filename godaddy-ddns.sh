@@ -14,14 +14,14 @@
 
 
 # Add below two lines in crontab entry.
-## */5 * * * * <Path-to-godaddyDDNS>/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1  ##
-## @reboot <Path-to-godaddyDDNS>/godaddyDDNS/godaddyDDNS.sh >/dev/null 2>&1  ##
+## */5 * * * * <Path-to-godaddy-ddns>/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1  ##
+## @reboot <Path-to-godaddy-ddns>/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1  ##
 function initialize()
 {
     # Present directory of this file
     DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)
     # Properties file to store value of domain, subdomain, keys and others
-    properties_file="$DIR/godaddyDDNS.properties"
+    properties_file="$DIR/godaddy-ddns.properties"
 
     # Source the values from properties file
     source $properties_file
@@ -93,46 +93,46 @@ function setDNSRecord()
 function writeLog()
 {
     if [[ $1 -eq 0 ]]; then
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-        echo "DNS IP: $currentIp" >> $DIR/godaddyDDNS.log
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
+        echo "DNS IP: $currentIp" >> $DIR/godaddy-ddns.log
         echo "TTL: $ttl"
-        echo "Status: OK" >> $DIR/godaddyDDNS.log
+        echo "Status: OK" >> $DIR/godaddy-ddns.log
         return 0
     elif [[ $1 -eq 100 ]]; then
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-        echo "DNS IP: " >> $DIR/godaddyDDNS.log
-        echo "TTL: " >> $DIR/godaddyDDNS.log
-        echo "Status: Unknown - "$2"" >> $DIR/godaddyDDNS.log
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
+        echo "DNS IP: " >> $DIR/godaddy-ddns.log
+        echo "TTL: " >> $DIR/godaddy-ddns.log
+        echo "Status: Unknown - "$2"" >> $DIR/godaddy-ddns.log
         return 100
     else
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddyDDNS.log
-        echo "DNS IP: " >> $DIR/godaddyDDNS.log
-        echo "TTL: " >> $DIR/godaddyDDNS.log
-        echo "Status: NOT OK - "$2"" >> $DIR/godaddyDDNS.log
+        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
+        echo "DNS IP: " >> $DIR/godaddy-ddns.log
+        echo "TTL: " >> $DIR/godaddy-ddns.log
+        echo "Status: NOT OK - "$2"" >> $DIR/godaddy-ddns.log
         return 1
     fi
 }
 
 function addCronJobs()
 {
-    crontab -l > $DIR/godaddyDDNS.cron
-    grep -v "^#" $DIR/godaddyDDNS.cron | grep -i "$DIR/godaddyDDNS.sh"
+    crontab -l > $DIR/godaddy-ddns.cron
+    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh"
     croncheck=$?
     if [[ $croncheck -ne 0 ]]; then
-        echo "*/5 * * * * $DIR/godaddyDDNS.sh >/dev/null 2>&1" >> $DIR/godaddyDDNS.cron
-        echo "@reboot $DIR/godaddyDDNS.sh >/dev/null 2>&1" >> $DIR/godaddyDDNS.cron
-        crontab "$DIR/godaddyDDNS.cron"
+        echo "*/5 * * * * $DIR/godaddy-ddns.sh >/dev/null 2>&1" >> $DIR/godaddy-ddns.cron
+        echo "@reboot $DIR/godaddy-ddns.sh >/dev/null 2>&1" >> $DIR/godaddy-ddns.cron
+        crontab "$DIR/godaddy-ddns.cron"
     fi
     # Check new status of cron
-    crontab -l > $DIR/godaddyDDNS.cron
-    grep -v "^#" $DIR/godaddyDDNS.cron | grep -i "$DIR/godaddyDDNS.sh"
+    crontab -l > $DIR/godaddy-ddns.cron
+    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh"
     croncheck=$?
     if [[ $croncheck -ne 0 ]]; then
         # If cron task not created succesfully
-        rm -f $DIR/godaddyDDNS.cron
+        rm -f $DIR/godaddy-ddns.cron
         return 1
     fi
-    rm -f $DIR/godaddyDDNS.cron
+    rm -f $DIR/godaddy-ddns.cron
     return 0
 }
 
@@ -173,7 +173,7 @@ elif [[ $setDNSRecordStatus -eq 1 ]]; then
 elif [[ $setDNSRecordStatus -eq 0 ]]; then
     writeLog 0
 else
-    writeLog 100 "Unknown Error: Run command: bash -x godaddyDDNS.sh and report us with output after OMMITING key and secret."
+    writeLog 100 "Unknown Error: Run command: bash -x godaddy-ddns.sh and report us with output after OMMITING key and secret."
 fi
 
 # Add cron job
