@@ -22,6 +22,7 @@ function initialize()
     DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)
     # Properties file to store value of domain, subdomain, keys and others
     properties_file="$DIR/godaddy-ddns.properties"
+    logfile="$DIR/godaddy-ddns.log"
 
     # Source the values from properties file
     source $properties_file
@@ -93,22 +94,22 @@ function setDNSRecord()
 function writeLog()
 {
     if [[ $1 -eq 0 ]]; then
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
-        echo "DNS IP: $currentIp" >> $DIR/godaddy-ddns.log
+        echo "DNS Name: "$name.$domain"" > "$logfile"
+        echo "DNS IP: $currentIp" >> "$logfile"
         echo "TTL: $ttl"
-        echo "Status: OK" >> $DIR/godaddy-ddns.log
+        echo "Status: OK" >> "$logfile"
         return 0
     elif [[ $1 -eq 100 ]]; then
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
-        echo "DNS IP: " >> $DIR/godaddy-ddns.log
-        echo "TTL: " >> $DIR/godaddy-ddns.log
-        echo "Status: Unknown - "$2"" >> $DIR/godaddy-ddns.log
+        echo "DNS Name: "$name.$domain"" > "$logfile"
+        echo "DNS IP: " >> "$logfile"
+        echo "TTL: " >> "$logfile"
+        echo "Status: Unknown - "$2"" >> "$logfile"
         return 100
     else
-        echo "DNS Name: "$name.$domain"" > $DIR/godaddy-ddns.log
-        echo "DNS IP: " >> $DIR/godaddy-ddns.log
-        echo "TTL: " >> $DIR/godaddy-ddns.log
-        echo "Status: NOT OK - "$2"" >> $DIR/godaddy-ddns.log
+        echo "DNS Name: "$name.$domain"" > "$logfile"
+        echo "DNS IP: " >> "$logfile"
+        echo "TTL: " >> "$logfile"
+        echo "Status: NOT OK - "$2"" >> "$logfile"
         return 1
     fi
 }
