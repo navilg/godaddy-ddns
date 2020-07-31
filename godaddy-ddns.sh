@@ -96,7 +96,7 @@ function writeLog()
     if [[ $1 -eq 0 ]]; then
         echo "DNS Name: "$name.$domain"" > "$logfile"
         echo "DNS IP: $currentIp" >> "$logfile"
-        echo "TTL: $ttl"
+        echo "TTL: $ttl" >> "$logfile"
         echo "Status: OK" >> "$logfile"
         return 0
     elif [[ $1 -eq 100 ]]; then
@@ -117,7 +117,7 @@ function writeLog()
 function addCronJobs()
 {
     crontab -l > $DIR/godaddy-ddns.cron
-    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh"
+    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh" > /dev/null 2>&1
     croncheck=$?
     if [[ $croncheck -ne 0 ]]; then
         echo "*/5 * * * * $DIR/godaddy-ddns.sh >/dev/null 2>&1" >> $DIR/godaddy-ddns.cron
@@ -126,7 +126,7 @@ function addCronJobs()
     fi
     # Check new status of cron
     crontab -l > $DIR/godaddy-ddns.cron
-    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh"
+    grep -v "^#" $DIR/godaddy-ddns.cron | grep -i "$DIR/godaddy-ddns.sh" > /dev/null 2>&1
     croncheck=$?
     if [[ $croncheck -ne 0 ]]; then
         # If cron task not created succesfully
