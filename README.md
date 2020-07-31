@@ -9,6 +9,14 @@
 * OS: Linux. Tested on Ubuntu server 18.04 LTS with BASH shell.
 * Required utility tools: curl, BASH shell.
 
+**Features**
+
+* Automatically updates Public IPv4 address in GoDaddy A Record
+* Minimal and easy setup.
+* Minimal dependency on extra tools.
+* Lightweight
+* Minimal resource requirement
+
 **How do I get set up ?**
 
 * Clone this repository in your server.
@@ -41,10 +49,10 @@ secret=dfgsx6daflx5]gkhhi8yjxf
 * Key and Secret can be generated from GoDaddy Developer page. https://developer.godaddy.com/getstarted
 * After updating. Run the script.
 *./godaddy-ddns.sh*
-* Check the log in godaddyDDNS.log file
+* Check the log in godaddy-ddns.log file
 * If log status is OK. Its working fine. Verify the DNS record in GoDaddy account.
 * **Updating the DNS record in GoDaddy doesn't mean DNS server is also updated. DNS server updation completely depends on TTL value. Its good to have short TTL value for highly dynamic IP address.**
-* Create a crontab entry to run the godaddyDDNS.sh file every five minutes.
+* Create a crontab entry to run the godaddy-ddns.sh file every five minutes.
 
 ```
 crontab -e
@@ -67,8 +75,8 @@ GoDaddy supports 60 requests per minutes. This scripts uses 2 requests. So, Make
 
 **Contribution guidelines**
 
-* You can create issue here --> https://github.com/navilg/godaddyDDNS/issues
-* Your pull requests are invited for review and merge --> https://github.com/navilg/godaddyDDNS/pulls
+* You can create issue here --> https://github.com/navilg/godaddy-ddns/issues
+* Your pull requests are invited for review and merge --> https://github.com/navilg/godaddy-ddns/pulls
 
 **How to reach me ?**
 

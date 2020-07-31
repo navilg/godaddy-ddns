@@ -1,0 +1,14 @@
+vZ.2
+
+* New Feature: Ignore commented line in godaddy-ddns.properties file
+* Fix Bug: Script failes with script error, when authentication fails.
+* Fix Bug: Script fails with script error, when internet connection fails.
+* New Feature: Auto-create cron jobs
+* Fix Bug: Wrong status in log file.
+* Enhancement: More informative log file
+* Fix Bug: Script fails, when record not already created.
+
+vZ.1
+
+* New Feature: Auto-update TTL value
+* Fix Bug: Incorrect updation of IPv4 address in log
