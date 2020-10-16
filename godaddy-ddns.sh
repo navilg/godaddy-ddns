@@ -138,17 +138,6 @@ function addCronJobs()
     return 0
 }
 
-function modify()
-{
-    # This function runs when script is executed with argument as 'modify'
-    # ./godaddy-ddns modify
-
-    echo "Domain"
-    echo "Name:"
-    echo "TTL:"
-    echo "key:"
-}
-
 # Initialising Variables
 getDNSRecordStatus=1000
 getPubIPStatus=1000
