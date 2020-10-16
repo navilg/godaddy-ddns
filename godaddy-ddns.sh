@@ -58,7 +58,8 @@ function getPubIP()
     ret=$(curl -s GET "http://ipinfo.io/json")
     checkret=$?
     if [[ $checkret -eq 0 ]]; then
-        currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+        #currentIp=$(echo $ret | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+        currentIp=$(echo "$ret" | grep -w -m 1 "\"ip\"" | sed -r -e 's/^ *//' -e 's/.*: *"//' -e 's/",?//')
         return 0
     fi
     return 1
@@ -135,6 +136,17 @@ function addCronJobs()
     fi
     rm -f $DIR/godaddy-ddns.cron
     return 0
+}
+
+function modify()
+{
+    # This function runs when script is executed with argument as 'modify'
+    # ./godaddy-ddns modify
+
+    echo "Domain"
+    echo "Name:"
+    echo "TTL:"
+    echo "key:"
 }
 
 # Initialising Variables
