@@ -1,5 +1,7 @@
 #!/bin/bash
 
+current_version="vZ.2.1"
+
 # This script is used to check and update your GoDaddy DNS server to the IP address of your current internet connection.
 # Special thanks to mfox for his ps script
 # https://github.com/markafox/GoDaddy_Powershell_DDNS
@@ -136,6 +138,18 @@ function addCronJobs()
     rm -f $DIR/godaddy-ddns.cron
     return 0
 }
+
+function version()
+{
+    echo "GoDaddy-DDNS $current_version"
+    exit 0
+}
+
+# Check version
+
+if [ "$1" == "version" ]; then
+    version
+fi
 
 # Initialising Variables
 getDNSRecordStatus=1000

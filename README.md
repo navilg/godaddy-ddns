@@ -47,7 +47,9 @@ ttl=3600
 secret=dfgsx6daflx5]gkhhi8yjxf
 ```
 * Key and Secret can be generated from GoDaddy Developer page. https://developer.godaddy.com/getstarted
-* After updating. Run the script.
+* Make sure record is **'A' type** in godaddy records list. If record is created with some other type, it will fail with error. 
+* If record is not already created, Running this script will create it.
+* After updating properties file. Run the script.
 *./godaddy-ddns.sh*
 * Check the log in godaddy-ddns.log file
 * If log status is OK. Its working fine. Verify the DNS record in GoDaddy account.
