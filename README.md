@@ -1,13 +1,11 @@
 # README #
 
-
 **What is this repository for?**
 
-* Public IP address of many hosting servers are dynamic and it changes based on availability. Some examples include AWS EC2 instance, Home Servers, GCP Cloud, etc.
+* Public IP address of many hosting servers or self-hosted server in homelab is dynamic and it changes based on availability. For e.g. AWS EC2 instance (Without Elastic IP), Home Servers, GCP Cloud, etc.
 * This require updating the IP address in GoDaddy DNS record so that requests are forwarded to correct IP address.
 * This script uses cron jobs to check the current Public IP address of server and update the IP address in GoDaddy Manage DNS.
-* OS: Linux. Tested on Ubuntu server 18.04 LTS with BASH shell.
-* Required utility tools: curl, BASH shell.
+* OS: Linux. Tested on Ubuntu server 20.04 LTS with BASH shell.
 
 **Features**
 
@@ -17,72 +15,101 @@
 * Lightweight
 * Minimal resource requirement
 
-**How do I get set up ?**
+## How to setup
 
-* Clone this repository in your server.
-* Open godaddyDDNS/godaddy-ddns.properties file
-* Update the properties values as below:
+**Docker Way (Recommended)**
 
-domain=domain.com
+* Required tools: Docker
 
-name=subdomainORwww
+* If you have docker installed on your machine. Proceed with this step.
 
-ttl=ttlValueInSeconds
-
-key=key-value-from-godaddy-developer-console
-
-secret=secret-key-value-from-godaddy-developer-console
-
-
-e.g. To update DNS Name *navi.example.com*
-```
-domain=example.com
-
-name=navi
-
-key=cvvgfvfd54jghgz8s
-
-ttl=3600
-
-secret=dfgsx6daflx5]gkhhi8yjxf
-```
-* Key and Secret can be generated from GoDaddy Developer page. https://developer.godaddy.com/getstarted
-* Make sure record is **'A' type** in godaddy records list. If record is created with some other type, it will fail with error. 
-* If record is not already created, Running this script will create it.
-* After updating properties file. Run the script.
-*./godaddy-ddns.sh*
-* Check the log in godaddy-ddns.log file
-* If log status is OK. Its working fine. Verify the DNS record in GoDaddy account.
-* **Updating the DNS record in GoDaddy doesn't mean DNS server is also updated. DNS server updation completely depends on TTL value. Its good to have short TTL value for highly dynamic IP address.**
-* Create a crontab entry to run the godaddy-ddns.sh file every five minutes.
+* Pull image
 
 ```
-crontab -e
-```
-Add below lines
-
-```
-*/5 * * * * /Path/to/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1
-
-@reboot /Path/to/godaddy-ddns/godaddy-ddns.sh >/dev/null 2>&1
+docker pull linuxshots/godaddy-ddns:latest
 ```
 
-Save it
+* Run a container using below command. Replace the values with correct value.
 
-* 'How to' Youtube video --> https://youtu.be/lnPPdYexf4E
+For DNS *myserver.example.com* with ttl 1200 seconds
+
+```
+docker run --name myserver.example.com --restart --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:latest
+```
+
+* Check the log.
+
+```
+docker logs myserver.example.com
+```
+
+* And, You are done.
+
+* Make sure to use --restart option while running docker run. This make sure container starts automatically when your machine boots up.
+
+* To add another dns in same machine (Max 5 recommended due to rate limitations), Run the same docker run command with different container name and other values.
+
+**Non-Docker way**
+
+* Required utility tools: curl and BASH. Root/Sudo access required
+
+* Download installer script.
+
+```
+curl -LO https://raw.githubusercontent.com/navilg/godaddy-ddns/master/godaddyddns-go/assets/install.sh
+```
+
+* Run the script with sudo.
+
+```
+sudo bash install.sh
+```
+
+To install specific version. E.g. Version 1.0.0
+
+```
+sudo bash install.sh 1.0.0
+```
+
+* Check status of service
+
+```
+sudo systemctl status godaddy-ddns.service
+```
+
+* Add a dns record
+
+For DNS *myserver.example.com* with ttl 1200 seconds
+
+```
+godaddyddns add --domain='example.com' --name='myserver' --ttl=1200 --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'
+```
+
+* Check logs
+
+```
+tail -200f $HOME/.config/godaddy-ddns/log/godaddy-ddns.log
+```
+
+* To uninstall
+
+```
+sudo godaddyddns-uninstall.sh
+```
 
 **NOTES:**
-GoDaddy supports 60 requests per minutes. This scripts uses 2 requests. So, Make sure to create cronjob accordingly so that request doesn't exceed 60 request per minute or else it will fail.
+
+* Version Z.\*.\* is no more supported. Please use version 1.0.0+
+* Key and Secret can be generated from GoDaddy Developer page. <https://developer.godaddy.com/getstarted>
+* **DNS server updation depends on TTL value. Its good to have short TTL value for highly dynamic IP address. After DNS record is updated with new IP address it may take TTL time to update DNS lookup cache servers.**
 
 
-**Contribution guidelines**
+## Contribution guidelines
 
-* You can create issue here --> https://github.com/navilg/godaddy-ddns/issues
-* Your pull requests are invited for review and merge --> https://github.com/navilg/godaddy-ddns/pulls
+* You can create issues here --> <https://github.com/navilg/godaddy-ddns/issues>
+* Pull requests are welcomed for review and merge --> <https://github.com/navilg/godaddy-ddns/pulls>
 
 **How to reach me ?**
 
-* Repo owner or admin: [Navratan Gupta](mailto:navilg0409@gmail.com)
+* Author: [Navratan Lal Gupta](mailto:navilg0409@gmail.com)
 * You can reach out to me on navilg0409@gmail.com for any feedback.
-
-**Special mention to https://github.com/markafox/GoDaddy_Powershell_DDNS which is base for this script.**
