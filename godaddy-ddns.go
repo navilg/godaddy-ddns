@@ -58,7 +58,7 @@ type GodaddyErrorBody struct {
 }
 
 var (
-	version             string        = "1.0.0"
+	version             string        = "1.0.0-go1.17"
 	config_file         string        = "config.json"
 	home, _                           = os.UserHomeDir()
 	config_loc          string        = home + "/.config"
@@ -169,7 +169,18 @@ func init() {
 			return
 		}
 	}
+
+	// executablePath()
 }
+
+// func executablePath() {
+// 	ex, err := os.Executable()
+// 	if err != nil {
+// 		GoDaddyDDNSLogger(WarningLog, "", "", err.Error())
+// 	}
+// 	exPath := filepath.Dir(ex)
+// 	fmt.Println(exPath)
+// }
 
 func main() {
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
@@ -216,8 +227,6 @@ func main() {
 		if err != nil {
 			GoDaddyDDNSLogger(ErrorLog, *name, *domain, "Failed to add record. "+err.Error())
 			return
-		} else {
-			GoDaddyDDNSLogger(InformationLog, *name, *domain, "New record added.")
 		}
 
 	case "delete":
@@ -254,8 +263,6 @@ func main() {
 		if err != nil {
 			GoDaddyDDNSLogger(ErrorLog, *updateName, *updateDomain, "Failed to update record. "+err.Error())
 			return
-		} else {
-			GoDaddyDDNSLogger(InformationLog, *updateName, *updateDomain, "Record updated")
 		}
 
 	case "daemon":
@@ -275,7 +282,7 @@ func main() {
 		fmt.Printf("\nUsage:\n")
 
 		fmt.Printf("\nadd\n")
-		fmt.Printf("\tAdd new record\n")
+		fmt.Printf("\tAdd new record. Max 5 records\n")
 		addCmd.PrintDefaults()
 		fmt.Printf("\nupdate\n")
 		fmt.Printf("\tUpdate existing record\n")
@@ -349,7 +356,7 @@ func addRecord(domain, name, key, secret string, ttl int, isUpdate bool) error {
 			return err
 		}
 		if len(config.Config) >= max_record_size && !isUpdate {
-			return &CustomError{ErrorCode: 1, Err: errors.New("reached record limit. maximum " + fmt.Sprintf("%v", max_record_size) + "records allowed per server")}
+			return &CustomError{ErrorCode: 1, Err: errors.New("reached record limit. maximum " + fmt.Sprintf("%v", max_record_size) + " records allowed per server")}
 		}
 		for _, i := range config.Config {
 			if i.Domain == domain && i.Name == name {
@@ -387,6 +394,8 @@ func addRecord(domain, name, key, secret string, ttl int, isUpdate bool) error {
 	if err != nil {
 		return err
 	}
+
+	GoDaddyDDNSLogger(InformationLog, name, domain, "Record created/updated (ttl: "+fmt.Sprintf("%d", ttl)+", ip: "+pubIp+", key: ****, secret: ****)")
 
 	return nil
 }
@@ -594,10 +603,10 @@ func listRecord() error {
 		t := table.NewWriter()
 
 		t.SetOutputMirror(os.Stdout)
-		t.AppendHeader(table.Row{"Name", "Domain", "TTL"})
+		t.AppendHeader(table.Row{"#", "Name", "Domain", "TTL"})
 
-		for _, i := range config.Config {
-			t.AppendRow(table.Row{i.Name, i.Domain, i.TTL})
+		for i, rec := range config.Config {
+			t.AppendRow(table.Row{i + 1, rec.Name, rec.Domain, rec.TTL})
 		}
 		t.Render()
 
@@ -630,6 +639,9 @@ func daemonDDNS() {
 				return
 
 			case <-ticker.C:
+
+				GoDaddyDDNSLogger(InformationLog, "", "", "Polling the records")
+
 				var config Configuration
 
 				if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
@@ -731,7 +743,7 @@ func daemonDDNS() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			GoDaddyDDNSLogger(InformationLog, "", "", "Interupt signal received.")
+			GoDaddyDDNSLogger(InformationLog, "", "", "Interrupt signal received. Exiting")
 			ticker.Stop()
 			done <- true
 			if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
