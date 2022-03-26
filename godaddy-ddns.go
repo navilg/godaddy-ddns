@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 )
 
@@ -202,8 +203,7 @@ func main() {
 		// ticker := time.NewTicker(daemon_poll_time * time.Minute)
 		// quit := make(chan struct{})
 		// go daemonDDNS(ticker, &quit)
-		go daemonDDNS()
-		select {}
+		daemonDDNS()
 
 	case "list":
 		err := listRecord()
@@ -549,95 +549,132 @@ func listRecord() error {
 
 func daemonDDNS() {
 
-	for {
-		var config Configuration
+	ticker := time.NewTicker(daemon_poll_time)
+	done := make(chan bool)
 
-		if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
-			fmt.Println("A process already running in background")
-			continue
-		}
-
-		file, err := os.Create(config_loc + "/godaddy-ddns/" + "daemon.lock")
+	if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
+		fmt.Println("A process already running in background")
+		err = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
 		if err != nil {
-			fmt.Println("Failed to lock the daemon process")
-			continue
+			os.Exit(1)
 		}
-		file.Close()
+	}
 
-		configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
 
-		if len(configFileContent) != 0 {
-			err = json.Unmarshal(configFileContent, &config)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
+			case <-ticker.C:
+				var config Configuration
 
-			if len(config.Config) == 0 {
-				fmt.Println("no record exist")
-				continue
-			}
+				if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
+					fmt.Println("A process already running in background")
+					continue
+				}
 
-			for _, i := range config.Config {
+				file, err := os.Create(config_loc + "/godaddy-ddns/" + "daemon.lock")
+				if err != nil {
+					fmt.Println("Failed to lock the daemon process")
+					continue
+				}
+				file.Close()
 
-				name := i.Name
-				domain := i.Domain
-				key := i.Key
-				secret := i.Secret
-				ttl := i.TTL
-
-				body, err := getDNSRecord(name, domain, key, secret)
+				configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
 				if err != nil {
 					fmt.Println(err.Error())
 					continue
 				}
 
-				var recordsBody []GodaddyRecordBody
-				err = json.Unmarshal([]byte(body), &recordsBody)
-				if err != nil {
-					fmt.Println(err.Error())
-					continue
-				}
-
-				var existingTtl int
-				var existingIp string
-
-				if len(recordsBody) != 0 {
-					existingTtl = recordsBody[0].TTL
-					existingIp = recordsBody[0].Data
-				} else {
-					existingTtl = 0
-					existingIp = ""
-				}
-
-				pubIp, err := getPubIP()
-				if err != nil {
-					fmt.Println(err.Error())
-					continue
-				}
-
-				if ttl != existingTtl || pubIp != existingIp {
-					_, err := setDNSRecord(name, domain, key, secret, pubIp, ttl)
+				if len(configFileContent) != 0 {
+					err = json.Unmarshal(configFileContent, &config)
 					if err != nil {
 						fmt.Println(err.Error())
 						continue
 					}
+
+					if len(config.Config) == 0 {
+						fmt.Println("no record exist")
+						continue
+					}
+
+					for _, i := range config.Config {
+
+						name := i.Name
+						domain := i.Domain
+						key := i.Key
+						secret := i.Secret
+						ttl := i.TTL
+
+						body, err := getDNSRecord(name, domain, key, secret)
+						if err != nil {
+							fmt.Println(err.Error())
+							continue
+						}
+
+						var recordsBody []GodaddyRecordBody
+						err = json.Unmarshal([]byte(body), &recordsBody)
+						if err != nil {
+							fmt.Println(err.Error())
+							continue
+						}
+
+						var existingTtl int
+						var existingIp string
+
+						if len(recordsBody) != 0 {
+							existingTtl = recordsBody[0].TTL
+							existingIp = recordsBody[0].Data
+						} else {
+							existingTtl = 0
+							existingIp = ""
+						}
+
+						pubIp, err := getPubIP()
+						if err != nil {
+							fmt.Println(err.Error())
+							continue
+						}
+
+						if ttl != existingTtl || pubIp != existingIp {
+							_, err := setDNSRecord(name, domain, key, secret, pubIp, ttl)
+							if err != nil {
+								fmt.Println(err.Error())
+								continue
+							}
+						}
+
+						time.Sleep(10 * time.Second)
+					}
 				}
 
-				time.Sleep(10 * time.Second)
+				err = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
 			}
 		}
+	}()
 
-		err = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
+	// Handle signal interrupt
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			fmt.Println("Interrupt cleanup.")
+			ticker.Stop()
+			done <- true
+			if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
+				_ = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
+			}
+			os.Exit(0)
 		}
+	}()
 
-		time.Sleep(daemon_poll_time)
-	}
+	time.Sleep(8760 * time.Hour) // Sleep for 365 days
+	ticker.Stop()
+	done <- true
 }
