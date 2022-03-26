@@ -118,19 +118,19 @@ func init() {
 		err := os.Mkdir(config_loc, config_dir_perm)
 		if err != nil {
 			fmt.Println("Failed to create directory,", config_loc, err.Error())
-			return
+			os.Exit(1)
 		}
 
 		err = os.Mkdir(config_loc+"/godaddy-ddns", config_dir_perm)
 		if err != nil {
 			fmt.Println("Failed to create directory,", config_loc+"/godaddy-ddns", err.Error())
-			return
+			os.Exit(1)
 		}
 
 		file, err := os.Create(config_loc + "/godaddy-ddns/" + config_file)
 		if err != nil {
 			fmt.Println("Failed to create config file,", config_loc+"/godaddy-ddns/"+config_file, err.Error())
-			return
+			os.Exit(1)
 		}
 		file.Close()
 	}
@@ -139,13 +139,13 @@ func init() {
 		err = os.Mkdir(config_loc+"/godaddy-ddns", config_dir_perm)
 		if err != nil {
 			fmt.Println("Failed to create directory,", config_loc+"/godaddy-ddns", err.Error())
-			return
+			os.Exit(1)
 		}
 
 		file, err := os.Create(config_loc + "/godaddy-ddns/" + config_file)
 		if err != nil {
 			fmt.Println("Failed to create config file,", config_loc+"/godaddy-ddns/"+config_file, err.Error())
-			return
+			os.Exit(1)
 		}
 		file.Close()
 	}
@@ -154,7 +154,7 @@ func init() {
 		file, err := os.Create(config_loc + "/godaddy-ddns/" + config_file)
 		if err != nil {
 			fmt.Println("Failed to create config file,", config_loc+"/godaddy-ddns/"+config_file, err.Error())
-			return
+			os.Exit(1)
 		}
 		file.Close()
 	}
@@ -162,11 +162,8 @@ func init() {
 	if _, err := os.Stat(config_loc + "/godaddy-ddns/log"); os.IsNotExist(err) {
 		err := os.Mkdir(config_loc+"/godaddy-ddns/log", config_dir_perm)
 		if err != nil {
-			if err != nil {
-				fmt.Println("Failed to create directory,", config_loc+"/godaddy-ddns/log", err.Error())
-				return
-			}
-			return
+			fmt.Println("Failed to create directory,", config_loc+"/godaddy-ddns/log", err.Error())
+			os.Exit(1)
 		}
 	}
 
@@ -202,83 +199,7 @@ func main() {
 	updateKey := updateCmd.String("key", "", "Key value generated from godaddy developer console")
 	updateSecret := updateCmd.String("secret", "", "Secret value generated from godaddy developer console")
 
-	switch os.Args[1] {
-
-	case "version":
-		fmt.Println("GoDaddy DDNS version", version)
-		return
-
-	case "add":
-		addCmd.Parse(os.Args[2:])
-		if *domain == "" || *name == "" || *key == "" || *secret == "" {
-			fmt.Println("ERROR domain, name, key and secret are mandatory")
-			fmt.Printf("\nUsage of %s:\n", os.Args[1])
-			addCmd.PrintDefaults()
-			return
-		}
-		if *ttl < 600 {
-			fmt.Println("ERROR TTL value cannot be less than 600 seconds.")
-			fmt.Printf("\nUsage of %s:\n", os.Args[1])
-			addCmd.PrintDefaults()
-			return
-		}
-
-		err := addRecord(*domain, *name, *key, *secret, *ttl, false)
-		if err != nil {
-			GoDaddyDDNSLogger(ErrorLog, *name, *domain, "Failed to add record. "+err.Error())
-			return
-		}
-
-	case "delete":
-		deleteCmd.Parse(os.Args[2:])
-		if *deleteDomain == "" || *deleteName == "" {
-			fmt.Println("ERROR domain and name are mandatory")
-			fmt.Printf("\nUsage of %s:\n", os.Args[1])
-			deleteCmd.PrintDefaults()
-			return
-		}
-		err := deleteRecord(*deleteDomain, *deleteName)
-		if err != nil {
-			GoDaddyDDNSLogger(ErrorLog, *deleteName, *deleteDomain, "Failed to delete record. "+err.Error())
-			return
-		} else {
-			GoDaddyDDNSLogger(InformationLog, *deleteName, *deleteDomain, "Record removed from configuration. If not in use, delete the record manually from GoDaddy console.")
-		}
-
-	case "update":
-		updateCmd.Parse(os.Args[2:])
-		if *updateDomain == "" || *updateName == "" || *updateKey == "" || *updateSecret == "" {
-			fmt.Println("ERROR domain, name, key and secret are mandatory")
-			fmt.Printf("\nUsage of %s:\n", os.Args[1])
-			updateCmd.PrintDefaults()
-			return
-		}
-		if *ttl < 600 {
-			fmt.Println("ERROR TTL value cannot be less than 600 seconds.")
-			fmt.Printf("\nUsage of %s:\n", os.Args[1])
-			updateCmd.PrintDefaults()
-			return
-		}
-		err := addRecord(*updateDomain, *updateName, *updateKey, *updateSecret, *updateTtl, true)
-		if err != nil {
-			GoDaddyDDNSLogger(ErrorLog, *updateName, *updateDomain, "Failed to update record. "+err.Error())
-			return
-		}
-
-	case "daemon":
-		// ticker := time.NewTicker(daemon_poll_time * time.Minute)
-		// quit := make(chan struct{})
-		// go daemonDDNS(ticker, &quit)
-		daemonDDNS()
-
-	case "list":
-		err := listRecord()
-		if err != nil {
-			fmt.Println("Failed to list records,", err.Error())
-			return
-		}
-
-	default:
+	var usage = func() {
 		fmt.Printf("\nUsage:\n")
 
 		fmt.Printf("\nadd\n")
@@ -300,7 +221,94 @@ func main() {
 		fmt.Printf("\tgoddns update --domain='example.com' --name='myweb' --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'\n")
 		fmt.Printf("\tgoddns delete --domain='example.com' --name='myweb'\n")
 		fmt.Printf("\tgoddns version'\n")
+		fmt.Printf("\nTo uninstall (If installed using convenient script)\n")
+		fmt.Printf("\tsudo godaddyddns-uninstall.sh\n")
+	}
 
+	if len(os.Args) < 2 {
+		fmt.Println("Atleast one argument required")
+		usage()
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+
+	case "version":
+		fmt.Println("GoDaddy DDNS version", version)
+		return
+
+	case "add":
+		addCmd.Parse(os.Args[2:])
+		if *domain == "" || *name == "" || *key == "" || *secret == "" {
+			fmt.Println("ERROR domain, name, key and secret are mandatory")
+			fmt.Printf("\nUsage of %s:\n", os.Args[1])
+			addCmd.PrintDefaults()
+			os.Exit(1)
+		}
+		if *ttl < 600 {
+			fmt.Println("ERROR TTL value cannot be less than 600 seconds.")
+			fmt.Printf("\nUsage of %s:\n", os.Args[1])
+			addCmd.PrintDefaults()
+			os.Exit(1)
+		}
+
+		err := addRecord(*domain, *name, *key, *secret, *ttl, false)
+		if err != nil {
+			GoDaddyDDNSLogger(ErrorLog, *name, *domain, "Failed to add record. "+err.Error())
+			os.Exit(1)
+		}
+
+	case "delete":
+		deleteCmd.Parse(os.Args[2:])
+		if *deleteDomain == "" || *deleteName == "" {
+			fmt.Println("ERROR domain and name are mandatory")
+			fmt.Printf("\nUsage of %s:\n", os.Args[1])
+			deleteCmd.PrintDefaults()
+			os.Exit(1)
+		}
+		err := deleteRecord(*deleteDomain, *deleteName)
+		if err != nil {
+			GoDaddyDDNSLogger(ErrorLog, *deleteName, *deleteDomain, "Failed to delete record. "+err.Error())
+			os.Exit(1)
+		} else {
+			GoDaddyDDNSLogger(InformationLog, *deleteName, *deleteDomain, "Record removed from configuration. If not in use, delete the record manually from GoDaddy console.")
+		}
+
+	case "update":
+		updateCmd.Parse(os.Args[2:])
+		if *updateDomain == "" || *updateName == "" || *updateKey == "" || *updateSecret == "" {
+			fmt.Println("ERROR domain, name, key and secret are mandatory")
+			fmt.Printf("\nUsage of %s:\n", os.Args[1])
+			updateCmd.PrintDefaults()
+			os.Exit(1)
+		}
+		if *ttl < 600 {
+			fmt.Println("ERROR TTL value cannot be less than 600 seconds.")
+			fmt.Printf("\nUsage of %s:\n", os.Args[1])
+			updateCmd.PrintDefaults()
+			os.Exit(1)
+		}
+		err := addRecord(*updateDomain, *updateName, *updateKey, *updateSecret, *updateTtl, true)
+		if err != nil {
+			GoDaddyDDNSLogger(ErrorLog, *updateName, *updateDomain, "Failed to update record. "+err.Error())
+			os.Exit(1)
+		}
+
+	case "daemon":
+		// ticker := time.NewTicker(daemon_poll_time * time.Minute)
+		// quit := make(chan struct{})
+		// go daemonDDNS(ticker, &quit)
+		daemonDDNS()
+
+	case "list":
+		err := listRecord()
+		if err != nil {
+			fmt.Println("Failed to list records,", err.Error())
+			os.Exit(1)
+		}
+
+	default:
+		usage()
 	}
 
 }
@@ -670,7 +678,7 @@ func daemonDDNS() {
 					}
 
 					if len(config.Config) == 0 {
-						GoDaddyDDNSLogger(WarningLog, "", "", "No record added in configuration")
+						GoDaddyDDNSLogger(WarningLog, "", "", "No record found in configuration")
 						continue
 					}
 
