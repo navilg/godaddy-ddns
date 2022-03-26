@@ -8,10 +8,13 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type CustomError struct {
@@ -64,7 +67,51 @@ var (
 	godaddy_api_version string        = "v1"
 	max_record_size     int           = 5
 	daemon_poll_time    time.Duration = 1 * time.Minute // Time in minute
+	log_file            string        = config_loc + "/godaddy-ddns/log/godaddy-ddns.log"
 )
+
+const (
+	ErrorLog       string = "ERROR"
+	InformationLog string = "INFO"
+	WarningLog     string = "WARN"
+)
+
+func GoDaddyDDNSLogger(logType, name, domain, message string) {
+	file, err := os.OpenFile(log_file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var (
+		WarningLogger       *log.Logger
+		InfoLogger          *log.Logger
+		ErrorLogger         *log.Logger
+		StdoutInfoLogger    *log.Logger
+		StdoutWarningLogger *log.Logger
+		StdoutErrorLogger   *log.Logger
+	)
+
+	InfoLogger = log.New(file, "INFO ", log.Ldate|log.Ltime)
+	WarningLogger = log.New(file, "WARN ", log.Ldate|log.Ltime)
+	ErrorLogger = log.New(file, "ERROR ", log.Ldate|log.Ltime)
+	StdoutInfoLogger = log.New(os.Stdout, "INFO ", log.Ldate|log.Ltime)
+	StdoutWarningLogger = log.New(os.Stdout, "WARN ", log.Ldate|log.Ltime)
+	StdoutErrorLogger = log.New(os.Stdout, "ERROR ", log.Ldate|log.Ltime)
+
+	if logType == "INFO" {
+		InfoLogger.Println(name+"."+domain, message)
+		StdoutInfoLogger.Println(name+"."+domain, message)
+	} else if logType == "WARN" {
+		WarningLogger.Println(name+"."+domain, message)
+		StdoutWarningLogger.Println(name+"."+domain, message)
+	} else if logType == "ERROR" {
+		ErrorLogger.Println(name+"."+domain, message)
+		StdoutErrorLogger.Println(name+"."+domain, message)
+	} else {
+		fmt.Println(name+"."+domain, message)
+	}
+}
 
 func init() {
 	if _, err := os.Stat(config_loc); os.IsNotExist(err) {
@@ -111,6 +158,17 @@ func init() {
 		}
 		file.Close()
 	}
+
+	if _, err := os.Stat(config_loc + "/godaddy-ddns/log"); os.IsNotExist(err) {
+		err := os.Mkdir(config_loc+"/godaddy-ddns/log", config_dir_perm)
+		if err != nil {
+			if err != nil {
+				fmt.Println("Failed to create directory,", config_loc+"/godaddy-ddns/log", err.Error())
+				return
+			}
+			return
+		}
+	}
 }
 
 func main() {
@@ -156,11 +214,11 @@ func main() {
 
 		err := addRecord(*domain, *name, *key, *secret, *ttl, false)
 		if err != nil {
-			fmt.Println("Failed to add record,", err.Error())
+			GoDaddyDDNSLogger(ErrorLog, *name, *domain, "Failed to add record. "+err.Error())
 			return
+		} else {
+			GoDaddyDDNSLogger(InformationLog, *name, *domain, "New record added.")
 		}
-
-		fmt.Println("Record added")
 
 	case "delete":
 		deleteCmd.Parse(os.Args[2:])
@@ -172,11 +230,11 @@ func main() {
 		}
 		err := deleteRecord(*deleteDomain, *deleteName)
 		if err != nil {
-			fmt.Println("Failed to delete record,", err.Error())
+			GoDaddyDDNSLogger(ErrorLog, *deleteName, *deleteDomain, "Failed to delete record. "+err.Error())
 			return
+		} else {
+			GoDaddyDDNSLogger(InformationLog, *deleteName, *deleteDomain, "Record removed from configuration. If not in use, delete the record manually from GoDaddy console.")
 		}
-
-		fmt.Println("Record removed from GoDaddy DDNS configuration. If required, Delete the record from GoDaddy console manually")
 
 	case "update":
 		updateCmd.Parse(os.Args[2:])
@@ -194,10 +252,11 @@ func main() {
 		}
 		err := addRecord(*updateDomain, *updateName, *updateKey, *updateSecret, *updateTtl, true)
 		if err != nil {
-			fmt.Println("Failed to update record,", err.Error())
+			GoDaddyDDNSLogger(ErrorLog, *updateName, *updateDomain, "Failed to update record. "+err.Error())
 			return
+		} else {
+			GoDaddyDDNSLogger(InformationLog, *updateName, *updateDomain, "Record updated")
 		}
-		fmt.Println("Record updated")
 
 	case "daemon":
 		// ticker := time.NewTicker(daemon_poll_time * time.Minute)
@@ -230,7 +289,7 @@ func main() {
 		fmt.Printf("\tCheck version\n")
 		fmt.Printf("\n\nExamples\n")
 		fmt.Printf("\tgoddns list\n")
-		fmt.Printf("\tgoddns add --domain='example.com' --name='myweb' --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'\n")
+		fmt.Printf("\tgoddns add --domain='example.com' --name='myweb' --ttl=1200 --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'\n")
 		fmt.Printf("\tgoddns update --domain='example.com' --name='myweb' --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'\n")
 		fmt.Printf("\tgoddns delete --domain='example.com' --name='myweb'\n")
 		fmt.Printf("\tgoddns version'\n")
@@ -532,14 +591,16 @@ func listRecord() error {
 			return &CustomError{ErrorCode: 1, Err: errors.New("no record exist")}
 		}
 
-		fmt.Printf("-------------------------------------------------------------------------\n")
-		fmt.Printf("|\tName\t\t|\tDomain\t\t\t|\tTTL\t|\n")
-		fmt.Printf("-------------------------------------------------------------------------\n")
+		t := table.NewWriter()
+
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"Name", "Domain", "TTL"})
 
 		for _, i := range config.Config {
-			fmt.Printf("|\t%v\t|\t%v\t|\t%v\t|\n", i.Name, i.Domain, i.TTL)
+			t.AppendRow(table.Row{i.Name, i.Domain, i.TTL})
 		}
-		fmt.Printf("-------------------------------------------------------------------------\n")
+		t.Render()
+
 	} else {
 		return &CustomError{ErrorCode: 1, Err: errors.New("no record exist")}
 	}
@@ -549,13 +610,15 @@ func listRecord() error {
 
 func daemonDDNS() {
 
+	GoDaddyDDNSLogger(InformationLog, "", "", "Starting daemon process")
+
 	ticker := time.NewTicker(daemon_poll_time)
 	done := make(chan bool)
 
 	if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
-		fmt.Println("A process already running in background")
 		err = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
 		if err != nil {
+			GoDaddyDDNSLogger(ErrorLog, "", "", "Failed to release lock")
 			os.Exit(1)
 		}
 	}
@@ -570,32 +633,32 @@ func daemonDDNS() {
 				var config Configuration
 
 				if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
-					fmt.Println("A process already running in background")
+					GoDaddyDDNSLogger(WarningLog, "", "", "A daemon is already running. Waiting to release lock")
 					continue
 				}
 
 				file, err := os.Create(config_loc + "/godaddy-ddns/" + "daemon.lock")
 				if err != nil {
-					fmt.Println("Failed to lock the daemon process")
+					GoDaddyDDNSLogger(ErrorLog, "", "", "Failed to apply lock")
 					continue
 				}
 				file.Close()
 
 				configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
 				if err != nil {
-					fmt.Println(err.Error())
+					GoDaddyDDNSLogger(ErrorLog, "", "", "Failed to read configuration file. "+err.Error())
 					continue
 				}
 
 				if len(configFileContent) != 0 {
 					err = json.Unmarshal(configFileContent, &config)
 					if err != nil {
-						fmt.Println(err.Error())
+						GoDaddyDDNSLogger(ErrorLog, "", "", "Failed to read configuration file. "+err.Error())
 						continue
 					}
 
 					if len(config.Config) == 0 {
-						fmt.Println("no record exist")
+						GoDaddyDDNSLogger(WarningLog, "", "", "No record added in configuration")
 						continue
 					}
 
@@ -609,14 +672,14 @@ func daemonDDNS() {
 
 						body, err := getDNSRecord(name, domain, key, secret)
 						if err != nil {
-							fmt.Println(err.Error())
+							GoDaddyDDNSLogger(ErrorLog, name, domain, "Failed to get current state of record. "+err.Error())
 							continue
 						}
 
 						var recordsBody []GodaddyRecordBody
 						err = json.Unmarshal([]byte(body), &recordsBody)
 						if err != nil {
-							fmt.Println(err.Error())
+							GoDaddyDDNSLogger(ErrorLog, name, domain, "Failed to read current state of record. "+err.Error())
 							continue
 						}
 
@@ -633,25 +696,29 @@ func daemonDDNS() {
 
 						pubIp, err := getPubIP()
 						if err != nil {
-							fmt.Println(err.Error())
+							GoDaddyDDNSLogger(ErrorLog, name, domain, "Failed to get current Pub IP of server. "+err.Error())
 							continue
 						}
 
 						if ttl != existingTtl || pubIp != existingIp {
 							_, err := setDNSRecord(name, domain, key, secret, pubIp, ttl)
 							if err != nil {
-								fmt.Println(err.Error())
+								GoDaddyDDNSLogger(ErrorLog, name, domain, "Failed to update record. "+err.Error())
 								continue
+							} else {
+								GoDaddyDDNSLogger(InformationLog, name, domain, "Record updated (ttl: "+fmt.Sprintf("%d", existingTtl)+"->"+fmt.Sprintf("%d", ttl)+", ip: "+existingIp+"->"+pubIp+")")
 							}
+						} else {
+							GoDaddyDDNSLogger(InformationLog, name, domain, "Desired state is current state")
 						}
 
-						time.Sleep(10 * time.Second)
+						time.Sleep(10 * time.Second) // Wait for 10 seconds before picking next record.
 					}
 				}
 
 				err = os.Remove(config_loc + "/godaddy-ddns/" + "daemon.lock")
 				if err != nil {
-					fmt.Println(err.Error())
+					GoDaddyDDNSLogger(ErrorLog, "", "", "Failed to release lock")
 					continue
 				}
 			}
@@ -664,7 +731,7 @@ func daemonDDNS() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Println("Interrupt cleanup.")
+			GoDaddyDDNSLogger(InformationLog, "", "", "Interupt signal received.")
 			ticker.Stop()
 			done <- true
 			if _, err := os.Stat(config_loc + "/godaddy-ddns/" + "daemon.lock"); !os.IsNotExist(err) {
