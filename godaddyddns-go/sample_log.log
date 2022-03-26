@@ -1,0 +1,7 @@
+2019/12/09 17:22:47 INFO www.example.com Public IP changed (x.x.x.x -> y.y.y.y)
+2019/12/09 17:22:47 INFO www.example.com TTL changed (600 -> 1200)
+2019/12/09 17:22:47 INFO www.example.com Current state = Desired state
+2019/12/09 17:22:47 ERROR www.example.com Failed to authenticate
+2019/12/09 17:22:47 INFO www.example.com Added new record (name: www, domain: example.com, ttl: 600)
+2019/12/09 17:22:47 INFO www.example.com Updated record (ttl: 600 -> 1200)
+2019/12/09 17:22:47 WARN www.example.com Rate limit about to exceed
