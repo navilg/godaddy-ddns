@@ -65,10 +65,10 @@ curl -LO https://raw.githubusercontent.com/navilg/godaddy-ddns/master/godaddyddn
 sudo bash install.sh
 ```
 
-To install specific version. E.g. Version 1.0.0
+To install specific version. E.g. Version v1.0.0
 
 ```
-sudo bash install.sh 1.0.0
+sudo bash install.sh v1.0.0
 ```
 
 * Check status of service

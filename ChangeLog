@@ -1,3 +1,12 @@
+v1.0.0
+
+* New Feature: Run godaddy ddns using docker container
+* New Feature: Run godaddy ddns as systemd service. No cron required.
+* New Feature: Add multiple dns record for single machine (Max 5 dns record)
+* Enhancement: Logging improved. Historic logs available.
+* Enhancement: Add dns record using command line
+* Programming language: Golang 1.17.7
+
 vZ.2
 
 * New Feature: Ignore commented line in godaddy-ddns.properties file
