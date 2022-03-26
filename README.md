@@ -3,9 +3,8 @@
 **What is this repository for?**
 
 * Public IP address of many hosting servers or self-hosted server in homelab is dynamic and it changes based on availability. For e.g. AWS EC2 instance (Without Elastic IP), Home Servers, GCP Cloud, etc.
-* This require updating the IP address in GoDaddy DNS record so that requests are forwarded to correct IP address.
-* This script uses cron jobs to check the current Public IP address of server and update the IP address in GoDaddy Manage DNS.
-* OS: Linux. Tested on Ubuntu server 20.04 LTS with BASH shell.
+* This makes it difficult to set DNS for the server and require updating the IP address in GoDaddy DNS record so that requests are forwarded to correct IP address.
+* This tool or docker container will automatically update the DNS record with new IP address whenever IP address of server changes.
 
 **Features**
 
