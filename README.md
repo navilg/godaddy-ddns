@@ -34,7 +34,7 @@ docker pull linuxshots/godaddy-ddns:latest
 For DNS *myserver.example.com* with ttl 1200 seconds
 
 ```
-docker run --name myserver.example.com --restart --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:latest
+docker run --name myserver.example.com -d --restart unless-stopped --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:latest
 ```
 
 * Check the log.
@@ -95,6 +95,67 @@ tail -200f $HOME/.config/godaddy-ddns/log/godaddy-ddns.log
 
 ```
 sudo godaddyddns-uninstall.sh
+```
+
+**GoDaddy DDNS usage (For Non-docker way)**
+
+* Print help message
+
+```
+godaddyddns -h
+```
+
+* Add a record
+
+```
+godaddyddns add --domain='example.com' --name='myserver' --ttl=1200 --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'
+```
+
+Output:
+
+```
+INFO 2022/03/26 19:34:00 myserver.example.com Record created/updated (ttl: 1200, ip: 222.48.150.132, key: ****, secret: ****)
+```
+
+* List all configured records
+
+```
+godaddyddns list
+```
+
+Output:
+
+```
++---+-----------+-------------+------+
+| # | NAME      | DOMAIN      |  TTL |
++---+-----------+-------------+------+
+| 1 | myserver  | example.com | 1200 |
+| 2 | myserver2 | example.com | 1300 |
++---+-----------+-------------+------+
+```
+
+* Update existing configured record
+
+```
+godaddyddns update --domain='example.com' --name='myserver' --ttl=1300 --key='kEyGeneratedFr0mG0DaddY' --secret='s3cRe7GeneratedFr0mG0DaddY'
+```
+
+Output:
+
+```
+INFO 2022/03/26 19:34:27 myserver.example.com Record created/updated (ttl: 1300, ip: 222.48.150.132, key: ****, secret: ****)
+```
+
+* Delete a record from configuration
+
+```
+godaddyddns delete --domain='example.com' --name='myserver'
+```
+
+Output:
+
+```
+INFO 2022/03/26 19:35:34 myserver.example.com Record removed from configuration. If not in use, delete the record manually from GoDaddy console.
 ```
 
 **NOTES:**
