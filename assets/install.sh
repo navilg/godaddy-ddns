@@ -11,10 +11,10 @@ fi
 
 if [ "$1" == "" ]; then
     # cp $basedir/godaddyddns /usr/local/bin/godaddyddns
-    curl https://raw.githubusercontent.com/navilg/godaddy-ddns/master/godaddyddns-go/assets/godaddyddns -o /usr/local/bin/godaddyddns
+    curl https://raw.githubusercontent.com/navilg/godaddy-ddns/master/assets/godaddyddns -o /usr/local/bin/godaddyddns
 else
     # cp $basedir/godaddyddns /usr/local/bin/godaddyddns
-    curl https://raw.githubusercontent.com/navilg/godaddy-ddns/$1/godaddyddns-go/assets/godaddyddns -o /usr/local/bin/godaddyddns
+    curl https://raw.githubusercontent.com/navilg/godaddy-ddns/$1/assets/godaddyddns -o /usr/local/bin/godaddyddns
 fi
 
 if [ "$SUDO_USER" == "" ]; then

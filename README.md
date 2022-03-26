@@ -56,7 +56,7 @@ docker logs myserver.example.com
 * Download installer script.
 
 ```
-curl -LO https://raw.githubusercontent.com/navilg/godaddy-ddns/master/godaddyddns-go/assets/install.sh
+curl -LO https://raw.githubusercontent.com/navilg/godaddy-ddns/master/assets/install.sh
 ```
 
 * Run the script with sudo.
