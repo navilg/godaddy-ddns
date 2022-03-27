@@ -15,6 +15,7 @@ fi
 if [ ! -f $HOME/.config/godaddy-ddns/config.json ]; then
     /app/godaddyddns add --domain="$GD_DOMAIN" --name="$GD_NAME" --ttl=$GD_TTL --key="$GD_KEY" --secret="$GD_SECRET"
 else
-    echo "Configuration already exist. Starting daemon process"
+    echo "Configuration already exist. Syncing the record"
+    /app/godaddyddns update --domain="$GD_DOMAIN" --name="$GD_NAME" --ttl=$GD_TTL --key="$GD_KEY" --secret="$GD_SECRET"
 fi
 /app/godaddyddns daemon
