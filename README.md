@@ -2,7 +2,7 @@
 
 **What is this repository for?**
 
-* Public IP address of many hosting servers or self-hosted server in homelab is dynamic and it changes based on availability. For e.g. AWS EC2 instance (Without Elastic IP), Home Servers, GCP Cloud, etc.
+* Public IP address of some servers or self-hosted server in homelab is dynamic and it keep changing over time. For e.g. AWS EC2 instance (Without Elastic IP), Home Servers, GCP Cloud, etc.
 * This makes it difficult to set DNS for the server and require updating the IP address in GoDaddy DNS record so that requests are forwarded to correct IP address.
 * This tool and docker container will automatically update the DNS record with new IP address whenever IP address of server changes.
 
@@ -46,11 +46,11 @@ docker logs myserver.example.com
 
 * Make sure to use --restart option while running docker run. This make sure container starts automatically when your machine boots up.
 
-* To add another dns in same machine (Max 5 recommended due to rate limitations), Run the same docker run command with different container name and other values.
+* To add another dns for same machine (Max 5 recommended due to rate limitations), Run the same docker run command with another container name and values.
 
 **Non-Docker way**
 
-* Required utility tools: curl and BASH. Root/Sudo access required
+* Required tools: curl and BASH. Root/Sudo access required
 
 * Download installer script.
 
