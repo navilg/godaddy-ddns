@@ -24,6 +24,8 @@
 
 * Pull image
 
+Docker repository: https://hub.docker.com/r/linuxshots/godaddy-ddns
+
 ```
 docker pull linuxshots/godaddy-ddns:latest
 ```
