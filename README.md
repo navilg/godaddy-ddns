@@ -35,7 +35,11 @@ docker pull linuxshots/godaddy-ddns:latest
 For DNS *myserver.example.com* with ttl 1200 seconds
 
 ```
+# For linux running on amd64
 docker run --name myserver.example.com -d --restart unless-stopped --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:latest
+
+# For Linux running on arm64
+docker run --name myserver.example.com -d --restart unless-stopped --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:arm64v8-linux-1.0.0
 ```
 
 * Check the log.
