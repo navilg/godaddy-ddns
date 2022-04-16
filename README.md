@@ -1,5 +1,7 @@
 # README #
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/linuxshots)
+
 **What is this repository for?**
 
 * Public IP address of some servers or self-hosted server in homelab is dynamic and it keep changing over time. For e.g. AWS EC2 instance (Without Elastic IP), Home Servers, GCP Cloud, etc.
