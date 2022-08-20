@@ -462,10 +462,14 @@ func getPubIP() (string, error) {
 	}
 
 	var ipbody GetIPBody
+	var response *http.Response
 
-	response, err := http.Get("https://ipinfo.io/json")
+	response, err := http.Get("https://api.ipify.org/json")
 	if err != nil {
-		return "", nil
+		response, err = http.Get("https://ipinfo.io/json")
+		if err != nil {
+			return "", nil
+		}
 	}
 
 	defer response.Body.Close()
