@@ -23,7 +23,7 @@ jobs:
     - name: Build and push the Docker ARM64 image
       run: |
         sudo docker login -u linuxshots -p ${{ secrets.DOCKER_ACCESS_KEY }}
-        sudo docker build . --file Dockerfile --tag linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }}
+        sudo docker build . --file Dockerfile --tag linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }} --no-cache --pull
         sudo docker push linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }}
   
   build-on-amd64:
@@ -36,7 +36,7 @@ jobs:
     - name: Build and push the Docker AMD64 image
       run: |
         sudo docker login -u linuxshots -p ${{ secrets.DOCKER_ACCESS_KEY }}
-        sudo docker build . --file Dockerfile --tag linuxshots/godaddy-ddns:amd64-${{ steps.get_build_tag.outputs.build_tag }}
+        sudo docker build . --file Dockerfile --tag linuxshots/godaddy-ddns:amd64-${{ steps.get_build_tag.outputs.build_tag }} --no-cache --pull
         sudo docker push linuxshots/godaddy-ddns:amd64-${{ steps.get_build_tag.outputs.build_tag }}
 
   multiarch-push:
