@@ -1,3 +1,11 @@
+v1.1.0
+
+* Feature: Docker image for arm64
+* Bump golang to 1.19
+* Enhancement: Add ipify.org api as primary IPv4 provider.
+* DEPRECATED non-docker way
+* Removed vZ.* support.
+
 v1.0.0
 
 * New Feature: Run godaddy ddns using docker container
