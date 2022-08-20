@@ -3,7 +3,7 @@ ARG OS
 ARG ARCH
 COPY . /build/
 WORKDIR /build
-RUN RUN go mod download && go build -o godaddyddns
+RUN go mod download && go build -o godaddyddns
 
 FROM alpine:3.16
 ARG VERSION
