@@ -18,8 +18,6 @@
 
 ## How to setup
 
-**Docker Way (Recommended)**
-
 * Required tools: Docker
 
 * If you have docker installed on your machine. Proceed with this step.
@@ -39,9 +37,6 @@ For DNS *myserver.example.com* with ttl 1200 seconds
 ```
 # For linux running on amd64
 docker run --name myserver.example.com -d --restart unless-stopped --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:latest
-
-# For Linux running on arm64
-docker run --name myserver.example.com -d --restart unless-stopped --env GD_NAME=myserver --env GD_DOMAIN=example.com --env GD_TTL=1200 --env GD_KEY=key-value-from-godaddy-developer-console --env GD_SECRET=secret-key-value-from-godaddy-developer-console linuxshots/godaddy-ddns:arm64v8-linux-1.0.0
 ```
 
 * Check the log.
@@ -56,7 +51,7 @@ docker logs myserver.example.com
 
 * To add another dns for same machine (Max 5 recommended due to rate limitations), Run the same docker run command with another container name and values.
 
-**Non-Docker way**
+**Non-Docker way - DEPRACATED**
 
 * Required tools: curl and BASH. Root/Sudo access required
 
@@ -104,7 +99,7 @@ tail -200f $HOME/.config/godaddy-ddns/log/godaddy-ddns.log
 sudo godaddyddns-uninstall.sh
 ```
 
-**GoDaddy DDNS usage (For Non-docker way)**
+**GoDaddy DDNS usage (For Non-docker way) - DEPRECATED**
 
 * Print help message
 
