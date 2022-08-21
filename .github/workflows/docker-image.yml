@@ -56,6 +56,6 @@ jobs:
         sudo docker pull linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }}
         sudo docker manifest create linuxshots/godaddy-ddns:${{ steps.get_build_tag.outputs.build_tag }} --amend linuxshots/godaddy-ddns:amd64-${{ steps.get_build_tag.outputs.build_tag }} --amend linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }}
         sudo docker manifest create linuxshots/godaddy-ddns:latest --amend linuxshots/godaddy-ddns:amd64-${{ steps.get_build_tag.outputs.build_tag }} --amend linuxshots/godaddy-ddns:arm64-${{ steps.get_build_tag.outputs.build_tag }}
-        sudo docker manifest push linuxshots/godaddy-ddns:latest
         sudo docker manifest push linuxshots/godaddy-ddns:${{ steps.get_build_tag.outputs.build_tag }}
+        sudo docker manifest push linuxshots/godaddy-ddns:latest
         sudo docker logout
