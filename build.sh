@@ -23,5 +23,5 @@ if [ $# -ne 3 ]; then
     usage
     exit 1
 fi
-binaryBuild $1 $2 $3
+# binaryBuild $1 $2 $3
 containerImageBuild $1 $2 $3

@@ -254,7 +254,7 @@ func main() {
 
 		err := addRecord(*domain, *name, *key, *secret, *ttl, false)
 		if err != nil {
-			GoDaddyDDNSLogger(ErrorLog, *name, *domain, "Failed to add record. "+err.Error())
+			GoDaddyDDNSLogger(ErrorLog, *name, *domain, err.Error()+" Failed to add record.")
 			os.Exit(1)
 		}
 
@@ -328,13 +328,15 @@ func addRecord(domain, name, key, secret string, ttl int, isUpdate bool) error {
 
 	body, err := getDNSRecord(name, domain, key, secret)
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error getting DNS record " + err.Error())}
+		// return err
 	}
 
 	var recordsBody []GodaddyRecordBody
 	err = json.Unmarshal([]byte(body), &recordsBody)
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error Unmarshalling DNS record " + err.Error())}
+		// return err
 	}
 
 	var existingTtl int
@@ -350,18 +352,21 @@ func addRecord(domain, name, key, secret string, ttl int, isUpdate bool) error {
 
 	pubIp, err := getPubIP()
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error getting public IP of server " + err.Error())}
+		// return err
 	}
 
 	configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error reading configuration " + err.Error())}
+		// return err
 	}
 
 	if len(configFileContent) != 0 {
 		err = json.Unmarshal(configFileContent, &config)
 		if err != nil {
-			return err
+			return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error unmarshalling configuration " + err.Error())}
+			// return err
 		}
 		if len(config.Config) >= max_record_size && !isUpdate {
 			return &CustomError{ErrorCode: 1, Err: errors.New("reached record limit. maximum " + fmt.Sprintf("%v", max_record_size) + " records allowed per server")}
@@ -387,20 +392,23 @@ func addRecord(domain, name, key, secret string, ttl int, isUpdate bool) error {
 
 	configFileContent, err = json.MarshalIndent(updatedConfig, "", "  ")
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error marshalling configuration " + err.Error())}
+		// return err
 	}
 
 	if ttl != existingTtl || pubIp != existingIp {
 		_, err := setDNSRecord(name, domain, key, secret, pubIp, ttl)
 		if err != nil {
-			return err
+			return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error setting DNS record " + err.Error())}
+			// return err
 		}
 	}
 
 	err = ioutil.WriteFile(config_loc+"/godaddy-ddns/"+config_file, configFileContent, config_file_perm)
 
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("addRecord Error writing to configuration " + err.Error())}
+		// return err
 	}
 
 	GoDaddyDDNSLogger(InformationLog, name, domain, "Record created/updated (ttl: "+fmt.Sprintf("%d", ttl)+", ip: "+pubIp+", key: ****, secret: ****)")
@@ -558,13 +566,15 @@ func deleteRecord(domain, name string) error {
 
 	configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("deleteRecord Error reading configuration " + err.Error())}
+		// return err
 	}
 
 	if len(configFileContent) != 0 {
 		err = json.Unmarshal(configFileContent, &config)
 		if err != nil {
-			return err
+			return &CustomError{ErrorCode: 1, Err: errors.New("deleteRecord Error unmarshalling configuration " + err.Error())}
+			// return err
 		}
 
 		for _, i := range config.Config {
@@ -582,13 +592,15 @@ func deleteRecord(domain, name string) error {
 
 	configFileContent, err = json.MarshalIndent(newConfig, "", "  ")
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("deleteRecord Error marshalling configuration " + err.Error())}
+		// return err
 	}
 
 	err = ioutil.WriteFile(config_loc+"/godaddy-ddns/"+config_file, configFileContent, config_file_perm)
 
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("deleteRecord Error writing configuration " + err.Error())}
+		// return err
 	}
 
 	return nil
@@ -599,13 +611,15 @@ func listRecord() error {
 
 	configFileContent, err := ioutil.ReadFile(config_loc + "/godaddy-ddns/" + config_file)
 	if err != nil {
-		return err
+		return &CustomError{ErrorCode: 1, Err: errors.New("listRecord Error reading configuration " + err.Error())}
+		// return err
 	}
 
 	if len(configFileContent) != 0 {
 		err = json.Unmarshal(configFileContent, &config)
 		if err != nil {
-			return err
+			return &CustomError{ErrorCode: 1, Err: errors.New("listRecord Error unmarshalling configuration " + err.Error())}
+			// return err
 		}
 
 		if len(config.Config) == 0 {
