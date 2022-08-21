@@ -1,4 +1,8 @@
-v1.1.0
+v1.1.1
+
+* Bug fix: Resolve issue with multiarch docker images
+
+v1.1.0 (Buggy)
 
 * Feature: Docker image for arm64
 * Bump golang to 1.19
